@@ -10,9 +10,11 @@
     "start": "npm --prefix server start",
     "simulate": "npm --prefix server run simulate",
     "infra": "docker compose up -d kafka mongo",
-    "test": "npm --prefix server test && npm --prefix client test"
+    "test": "npm --prefix server test && npm --prefix client test",
+    "typecheck": "tsc -p types"
   },
   "devDependencies": {
-    "concurrently": "^10.0.5"
+    "concurrently": "^10.0.5",
+    "typescript": "^7.0.2"
   }
 }

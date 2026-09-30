@@ -139,6 +139,34 @@ docker exec -it kafka /opt/kafka/bin/kafka-console-producer.sh --bootstrap-serve
 > {"id":"ZONE-1","kind":"POLYGON","label":"BOX A","identity":"NEUTRAL","ttlSec":0,"geometry":{"points":[{"range":5,"bearing":10},{"range":8,"bearing":40},{"range":4,"bearing":70}]}}
 ```
 
+## TypeScript definitions
+
+[`types/geometry.d.ts`](types/geometry.d.ts) defines each geometry type. It has one input message
+type per kind: `OwnshipMessage`, `TrackMessage`, `PointMessage`, `LineMessage`, `PolygonMessage`,
+`CircleMessage`, `EllipseMessage`, `SectorMessage`, `BearingMessage` and `DeleteMessage`. It also
+covers the GeoJSON and legacy payloads. On the output side, it types the canonical objects the UI
+receives (`GeometryObject`, a union on `kind`) and the Socket.IO and REST payloads.
+[`types/examples.ts`](types/examples.ts) has one valid example per geometry type.
+
+```ts
+import type { GeometryObject, SectorMessage } from './types/geometry';
+
+const blindArc: SectorMessage = {
+  id: 'BLIND-ARC', kind: 'SECTOR',
+  geometry: { startBearing: 195, endBearing: 255, outerRadius: 30 },
+};
+
+function draw(obj: GeometryObject) {
+  if (obj.kind === 'SECTOR') obj.geometry.outerRadius; // narrowed to SectorGeometry
+}
+```
+
+From plain JavaScript you can use a JSDoc annotation instead:
+`/** @type {import('../types/geometry').GeometryObject} */`.
+
+Run `npm run typecheck` to compile the definitions and examples. It fails if the types and the
+examples drift apart.
+
 ## Plugging in your own Kafka formats
 
 Your upstream systems probably have their own schemas. You don't need to change the core code:
