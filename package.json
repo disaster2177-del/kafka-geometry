@@ -1,0 +1,18 @@
+{
+  "name": "naval-radar-geometry",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MERN app that consumes naval radar geometry from Kafka and renders it on a PPI scope",
+  "scripts": {
+    "install:all": "npm --prefix server install && npm --prefix client install",
+    "dev": "concurrently -n server,client -c green,cyan \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "build": "npm --prefix client run build",
+    "start": "npm --prefix server start",
+    "simulate": "npm --prefix server run simulate",
+    "infra": "docker compose up -d kafka mongo",
+    "test": "npm --prefix server test && npm --prefix client test"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}
