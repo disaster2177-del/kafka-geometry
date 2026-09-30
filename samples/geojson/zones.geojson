@@ -1,0 +1,101 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "EXZ-ALPHA",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              15.29928,
+              36.71926
+            ],
+            [
+              15.46654,
+              36.75535
+            ],
+            [
+              15.54046,
+              36.57333
+            ],
+            [
+              15.37956,
+              36.58333
+            ],
+            [
+              15.29928,
+              36.71926
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "label": "EXCLUSION ZONE ALPHA",
+        "identity": "NEUTRAL",
+        "source": "C2",
+        "ttlSec": 0,
+        "style": {
+          "color": "#ff9800",
+          "fill": "#ff9800",
+          "fillOpacity": 0.1
+        },
+        "restriction": "No entry"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ROUTE-1",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            15.2,
+            36.5
+          ],
+          [
+            15.37593,
+            36.64142
+          ],
+          [
+            15.63094,
+            36.7
+          ],
+          [
+            15.70643,
+            36.98516
+          ]
+        ]
+      },
+      "properties": {
+        "label": "PLANNED ROUTE",
+        "identity": "FRIEND",
+        "source": "NAV",
+        "ttlSec": 0,
+        "style": {
+          "color": "#8bc34a",
+          "dashed": true
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ANCH-1",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          15.07236,
+          36.21809
+        ]
+      },
+      "properties": {
+        "label": "ANCHORAGE",
+        "identity": "NEUTRAL",
+        "source": "C2",
+        "ttlSec": 0,
+        "depthM": 32
+      }
+    }
+  ]
+}

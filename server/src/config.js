@@ -8,7 +8,15 @@ const list = (v, def = []) => (v ? v.split(',').map((s) => s.trim()).filter(Bool
  * KAFKA_TOPICS entries look like "topic" or "topic:adapterName".
  */
 function parseTopics(value) {
-  const defaults = ['radar.geometry', 'radar.tracks', 'radar.ownship', 'radar.legacy-plots:legacyPlot'];
+  const defaults = [
+    'radar.geometry',
+    'radar.tracks',
+    'radar.ownship',
+    'radar.legacy-plots:legacyPlot',
+    'radar.nmea:nmea0183',
+    'ais.nmea:nmea0183',
+    'c2.zones',
+  ];
   return list(value, defaults).map((entry) => {
     const [topic, adapter = 'canonical'] = entry.split(':').map((s) => s.trim());
     return { topic, adapter };

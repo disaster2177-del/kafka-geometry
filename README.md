@@ -16,6 +16,13 @@ A MongoDB / Express / React / Node app that consumes naval and radar geometry fr
 
 - **Kafka consumer** with multiple topics, a per-topic **adapter** for different message formats,
   and automatic reconnect with back-off.
+- **Standard maritime formats** work without extra code:
+  - **NMEA 0183** (IEC 61162-1): radar/ARPA targets (`TTM`, `TLL`) and own ship from GPS and gyro
+    (`RMC`, `GGA`, `VTG`, `HDT`).
+  - **AIS** `!AIVDM` / `!AIVDO` (ITU-R M.1371): messages 1–3, 18, 5 and 24.
+  - **GeoJSON** (RFC 7946).
+  - The app's own canonical JSON.
+  - See [`samples/`](samples/) for an example file in each format.
 - **Geometry types:** own ship, tracks, points and markers, lines and routes, polygons and zones,
   circles (weapon or threat envelopes), ellipses (area of uncertainty), sectors and arcs (radar
   coverage, blind arcs), and bearing lines (ESM or jammer strobes).
@@ -60,7 +67,8 @@ npm run install:all         # server + client deps
 cp server/.env.example server/.env
 npm run infra               # starts kafka + mongo containers
 npm run dev                 # API on :4000, React (Vite) on :5173
-npm run simulate            # in another terminal: publishes demo data to Kafka
+npm run simulate            # in another terminal: publishes live demo data to Kafka
+# or publish the static sample files once:  npm --prefix server run samples
 # open http://localhost:5173
 ```
 
@@ -124,6 +132,9 @@ docker exec -it kafka /opt/kafka/bin/kafka-console-producer.sh --bootstrap-serve
 
 Your upstream systems probably have their own schemas. You don't need to change the core code:
 
+NMEA 0183 and AIS already have an adapter: bind the topic with `my.topic:nmea0183`. The Kafka
+value is plain text, one or more sentences per message. For any other format:
+
 1. Copy `server/src/kafka/adapters/legacyPlot.js`, for example to `myRadar.js`, and map your
    fields to the canonical format.
 2. Register it in `server/src/kafka/adapters/index.js`.
@@ -137,7 +148,7 @@ Invalid messages are never dropped silently. They are counted, logged, and liste
 | variable                                     | default                                        | description                                              |
 |----------------------------------------------|------------------------------------------------|----------------------------------------------------------|
 | `KAFKA_BROKERS`                              | `localhost:9092`                               | comma-separated list of brokers                          |
-| `KAFKA_TOPICS`                               | `radar.geometry,radar.tracks,radar.ownship,radar.legacy-plots:legacyPlot` | `topic[:adapter]` list                                   |
+| `KAFKA_TOPICS`                               | `radar.geometry,radar.tracks,radar.ownship,radar.legacy-plots:legacyPlot,radar.nmea:nmea0183,ais.nmea:nmea0183,c2.zones` | `topic[:adapter]` list. Adapters: `canonical` (JSON / GeoJSON), `nmea0183`, `legacyPlot` |
 | `KAFKA_GROUP_ID`                             | `naval-geometry-ui`                            | consumer group                                           |
 | `KAFKA_FROM_BEGINNING`                       | `false`                                        | replay each topic from the start                         |
 | `KAFKA_SSL`, `KAFKA_SASL_*`                  |                                                | secured clusters                                         |
@@ -172,13 +183,15 @@ Socket.IO events sent to the client: `snapshot` (the full picture), `geometry:ba
 server/
   src/index.js                 bootstrap
   src/kafka/consumer.js        kafkajs consumer, reconnect
-  src/kafka/adapters/          per-topic format adapters
+  src/kafka/adapters/          per-topic format adapters (canonical, nmea0183, legacyPlot)
   src/services/normalizer.js   validation + canonical model
   src/services/geometryStore.js live picture, trails, TTL, batching
   src/services/persistence.js  MongoDB writes / history
   src/socket.js                Socket.IO broadcasting
   src/routes/api.js            REST API
-  scripts/simulator.js         demo scenario producer
+  scripts/simulator.js         live demo scenario producer (NMEA, AIS, GeoJSON, JSON)
+  scripts/publish-samples.js   publishes /samples to Kafka
+samples/                       sample data in each supported format
 client/
   src/components/RadarScope.jsx PPI scope (SVG)
   src/lib/geo.js               projection / range-bearing math

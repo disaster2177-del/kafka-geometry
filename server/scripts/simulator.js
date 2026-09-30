@@ -8,13 +8,16 @@
  *   node scripts/simulator.js --rate 2         # updates per second (default 1)
  *
  * Topics used (all overridable with env vars):
- *   radar.ownship        OWNSHIP                  (canonical)
- *   radar.tracks         TRACK                    (canonical, absolute lat/lon)
+ *   radar.nmea           NMEA 0183 text: own ship ($GPRMC, $HEHDT) + ARPA targets ($RATTM)
+ *   ais.nmea             NMEA 0183 AIS: !AIVDM messages 1 (position) and 24 (vessel name)
+ *   c2.zones             GeoJSON FeatureCollection: exclusion zone, planned route, anchorage
+ *   radar.tracks         canonical JSON TRACK (combat system tracks, absolute lat/lon)
  *   radar.legacy-plots   flat legacy radar format (legacyPlot adapter, range/bearing)
- *   radar.geometry       zones, routes, ESM bearings, coverage sectors, ellipses, markers
+ *   radar.geometry       canonical JSON: ESM bearings, coverage sectors, WEZ/threat rings, AOU, datum
  */
 import 'dotenv/config';
 import { Kafka, Partitioners, logLevel } from 'kafkajs';
+import { aisName, aisPosition, hdt, rmc, ttm } from './lib/nmea.js';
 
 const args = process.argv.slice(2);
 const argValue = (name, def) => {
@@ -26,7 +29,9 @@ const HTTP_URL = argValue('--url', process.env.INGEST_URL || 'http://localhost:4
 const RATE = Number(argValue('--rate', 1));
 
 const TOPICS = {
-  ownship: process.env.SIM_TOPIC_OWNSHIP || 'radar.ownship',
+  nmea: process.env.SIM_TOPIC_NMEA || 'radar.nmea',
+  ais: process.env.SIM_TOPIC_AIS || 'ais.nmea',
+  zones: process.env.SIM_TOPIC_ZONES || 'c2.zones',
   tracks: process.env.SIM_TOPIC_TRACKS || 'radar.tracks',
   legacy: process.env.SIM_TOPIC_LEGACY || 'radar.legacy-plots',
   geometry: process.env.SIM_TOPIC_GEOMETRY || 'radar.geometry',
@@ -95,6 +100,23 @@ const legacyTracks = [
   { trackNo: 502, rng: 17, brg: 190, crs: 10, spd: 22, ident: 'S' },
 ];
 
+// Merchant traffic reported by AIS (cooperative, NEUTRAL)
+const aisVessels = [
+  { mmsi: 247123456, name: 'MSC AURORA', brg: 20, rng: 16, cog: 250, sog: 14.5 },
+  { mmsi: 538004512, name: 'NORDIC PRIDE', brg: 95, rng: 12, cog: 330, sog: 11.2 },
+  { mmsi: 636019825, name: 'OCEAN SPIRIT', brg: 140, rng: 20, cog: 10, sog: 17.8 },
+  { mmsi: 229876000, name: 'MARIA K', brg: 230, rng: 8, cog: 60, sog: 6.1 },
+  { mmsi: 244670316, name: 'ELBE TRADER', brg: 300, rng: 22, cog: 120, sog: 12.4 },
+  { mmsi: 311000927, name: 'AL SALAM', brg: 345, rng: 5, cog: 180, sog: 3.2 },
+].map((v) => ({ ...v, position: move(ownship.position, v.brg, v.rng) }));
+
+// Targets auto-acquired by the navigation radar's ARPA (reported as $RATTM)
+const arpaTargets = [
+  { number: 1, brg: 70, rng: 6.5, course: 200, speed: 9 },
+  { number: 2, brg: 165, rng: 3.8, course: 300, speed: 4 },
+  { number: 3, brg: 275, rng: 10.5, course: 80, speed: 13 },
+].map((t) => ({ ...t, position: move(ownship.position, t.brg, t.rng) }));
+
 const exclusionZone = [
   move(ownship.position, 20, 14),
   move(ownship.position, 40, 20),
@@ -110,16 +132,62 @@ const route = [
 const datum = move(ownship.position, 150, 11);
 
 // ---------------------------------------------------------------- messages
-function ownshipMsg() {
+/** Own ship nav data and ARPA targets as NMEA 0183 sentences (one Kafka message per sentence). */
+function nmeaSentences() {
+  const lines = [
+    hdt(ownship.heading),
+    rmc({ lat: ownship.position.lat, lon: ownship.position.lon, sog: ownship.speed, cog: ownship.heading }),
+  ];
+  for (const t of arpaTargets) {
+    const rb = rangeBearing(ownship.position, t.position);
+    lines.push(ttm({ number: t.number, range: rb.range, bearing: rb.bearing, speed: t.speed, course: t.course }));
+  }
+  return lines;
+}
+
+/** AIS position reports (and periodically the vessel names) as !AIVDM sentences. */
+function aisSentences(includeNames) {
+  const lines = [];
+  for (const v of aisVessels) {
+    if (includeNames) lines.push(aisName({ mmsi: v.mmsi, name: v.name }));
+    lines.push(aisPosition({ mmsi: v.mmsi, lat: v.position.lat, lon: v.position.lon, sog: v.sog, cog: v.cog, heading: Math.round(v.cog) }));
+  }
+  return lines;
+}
+
+/** Areas and routes from the C2 system as a GeoJSON FeatureCollection. */
+function zonesGeoJson() {
+  const ring = [...exclusionZone, exclusionZone[0]].map((p) => [round(p.lon), round(p.lat)]);
+  const anchorage = move(route[0], 200, 18);
   return {
-    id: ownship.id,
-    kind: 'OWNSHIP',
-    source: 'NAV',
-    label: 'OWN SHIP',
-    identity: 'FRIEND',
-    timestamp: Date.now(),
-    geometry: { position: { lat: round(ownship.position.lat), lon: round(ownship.position.lon) } },
-    properties: { heading: round(ownship.heading, 1), course: round(ownship.heading, 1), speed: ownship.speed },
+    type: 'FeatureCollection',
+    features: [
+      {
+        type: 'Feature',
+        id: 'EXZ-ALPHA',
+        geometry: { type: 'Polygon', coordinates: [ring] },
+        properties: {
+          label: 'EXCLUSION ZONE ALPHA',
+          identity: 'NEUTRAL',
+          source: 'C2',
+          ttlSec: 0,
+          style: { color: '#ff9800', fill: '#ff9800', fillOpacity: 0.1 },
+          restriction: 'No entry',
+        },
+      },
+      {
+        type: 'Feature',
+        id: 'ROUTE-1',
+        geometry: { type: 'LineString', coordinates: route.map((p) => [round(p.lon), round(p.lat)]) },
+        properties: { label: 'PLANNED ROUTE', identity: 'FRIEND', source: 'NAV', ttlSec: 0, style: { color: '#8bc34a', dashed: true } },
+      },
+      {
+        type: 'Feature',
+        id: 'ANCH-1',
+        geometry: { type: 'Point', coordinates: [round(anchorage.lon), round(anchorage.lat)] },
+        properties: { label: 'ANCHORAGE', identity: 'NEUTRAL', source: 'C2', ttlSec: 0, depthM: 32 },
+      },
+    ],
   };
 }
 
@@ -217,28 +285,6 @@ function staticGeometry() {
       properties: { confidence: 0.9 },
     },
     {
-      id: 'EXZ-ALPHA',
-      kind: 'POLYGON',
-      source: 'C2',
-      identity: 'NEUTRAL',
-      label: 'EXCLUSION ZONE ALPHA',
-      timestamp: now,
-      geometry: { points: exclusionZone.map((p) => ({ lat: round(p.lat), lon: round(p.lon) })) },
-      style: { color: '#ff9800', fill: '#ff9800', fillOpacity: 0.1 },
-      properties: { restriction: 'No entry', validUntil: new Date(now + 6 * 3600e3).toISOString() },
-    },
-    {
-      id: 'ROUTE-1',
-      kind: 'LINE',
-      source: 'NAV',
-      identity: 'FRIEND',
-      label: 'PLANNED ROUTE',
-      timestamp: now,
-      geometry: { points: route.map((p) => ({ lat: round(p.lat), lon: round(p.lon) })) },
-      style: { color: '#8bc34a', dashed: true },
-      properties: { legs: route.length - 1 },
-    },
-    {
       id: 'DATUM-1',
       kind: 'POINT',
       source: 'ASW',
@@ -257,11 +303,12 @@ async function createTransport() {
     console.log(`Simulator -> HTTP ${HTTP_URL}`);
     return {
       async send(topic, messages) {
-        const adapter = topic === TOPICS.legacy ? '?adapter=legacyPlot' : '';
+        const text = topic === TOPICS.nmea || topic === TOPICS.ais;
+        const adapter = topic === TOPICS.legacy ? '?adapter=legacyPlot' : text ? '?adapter=nmea0183' : '';
         const res = await fetch(HTTP_URL + adapter, {
           method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(messages),
+          headers: { 'content-type': text ? 'text/plain' : 'application/json' },
+          body: text ? messages.join('\n') : JSON.stringify(messages),
         });
         if (!res.ok) console.error(`HTTP ${res.status}:`, await res.text());
       },
@@ -287,7 +334,11 @@ async function createTransport() {
     send: (topic, messages) =>
       producer.send({
         topic,
-        messages: messages.map((m) => ({ key: String(m.id ?? m.trackNo), value: JSON.stringify(m) })),
+        messages: messages.map((m) =>
+          typeof m === 'string'
+            ? { key: null, value: m } // raw NMEA sentence
+            : { key: String(m.id ?? m.trackNo ?? 'batch'), value: JSON.stringify(m) },
+        ),
       }),
     close: () => producer.disconnect(),
   };
@@ -324,13 +375,17 @@ async function main() {
       tracks[i] = newTrack();
     }
 
+    for (const v of aisVessels) v.position = move(v.position, v.cog, v.sog * hours * 10);
+    for (const t of arpaTargets) t.position = move(t.position, t.course, t.speed * hours * 10);
+
     for (const lt of legacyTracks) {
       lt.brg = norm360(lt.brg + rand(-0.4, 0.4));
       lt.rng = Math.max(1, lt.rng + rand(-0.05, 0.05));
     }
 
     const sends = [
-      transport.send(TOPICS.ownship, [ownshipMsg()]),
+      transport.send(TOPICS.nmea, nmeaSentences()),
+      transport.send(TOPICS.ais, aisSentences(tick === 1 || tick % Math.round(30 * RATE) === 0)),
       transport.send(TOPICS.tracks, [...tracks.map(trackMsg), ...deletes]),
       transport.send(
         TOPICS.legacy,
@@ -339,6 +394,7 @@ async function main() {
     ];
     if (tick === 1 || tick % Math.max(1, Math.round(3 * RATE)) === 0) {
       sends.push(transport.send(TOPICS.geometry, staticGeometry()));
+      sends.push(transport.send(TOPICS.zones, [zonesGeoJson()]));
     }
     await Promise.all(sends);
     if (tick % Math.round(10 * RATE) === 0) console.log(`tick ${tick}: ${tracks.length + 2} tracks`);

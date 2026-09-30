@@ -11,6 +11,7 @@ export function createApp(deps) {
   const app = express();
   app.use(cors({ origin: config.corsOrigin }));
   app.use(express.json({ limit: '5mb' }));
+  app.use(express.text({ limit: '5mb', type: ['text/plain', 'application/x-nmea'] }));
 
   app.use('/api', createApiRouter(deps));
 
