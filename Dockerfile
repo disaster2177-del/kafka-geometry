@@ -13,6 +13,7 @@ WORKDIR /app/server
 COPY server/package*.json ./
 RUN npm ci --omit=dev
 COPY server/ ./
+COPY samples/ /app/samples/
 COPY --from=client /app/client/dist /app/client/dist
 EXPOSE 4000
 CMD ["node", "src/index.js"]

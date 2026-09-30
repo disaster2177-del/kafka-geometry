@@ -8,7 +8,9 @@
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "simulate": "node scripts/simulator.js",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "samples": "node scripts/publish-samples.js",
+    "generate-samples": "node scripts/generate-samples.js"
   },
   "engines": {
     "node": ">=18"
