@@ -1,0 +1,5 @@
+{"id":"T100","kind":"TRACK","source":"RADAR-1","identity":"HOSTILE","ttlSec":0,"geometry":{"position":{"range":12,"bearing":30}},"properties":{"course":210,"speed":28,"platform":"FAC"}}
+{"id":"T101","kind":"TRACK","source":"RADAR-1","identity":"FRIEND","ttlSec":0,"geometry":{"position":{"lat":36.43333,"lon":15.34365}},"properties":{"course":45,"speed":16,"platform":"FFG"}}
+{"id":"T102","kind":"TRACK","source":"RADAR-1","identity":"UNKNOWN","ttlSec":0,"geometry":{"position":{"range":18,"bearing":280}},"properties":{"course":95,"speed":250,"domain":"AIR","altitude":12000}}
+{"id":"T103","kind":"TRACK","source":"RADAR-1","identity":"NEUTRAL","ttlSec":0,"geometry":{"position":{"range":6,"bearing":200}},"properties":{"course":330,"speed":11,"platform":"MERCHANT"}}
+{"id":"T104","kind":"TRACK","source":"RADAR-1","identity":"SUSPECT","ttlSec":0,"geometry":{"position":{"range":15,"bearing":160}},"properties":{"course":300,"speed":35,"platform":"FAST BOAT"}}

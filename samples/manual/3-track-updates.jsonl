@@ -1,0 +1,4 @@
+{"id":"T100","kind":"TRACK","source":"RADAR-1","identity":"HOSTILE","ttlSec":0,"geometry":{"position":{"range":11.5,"bearing":29}},"properties":{"course":210,"speed":28,"platform":"FAC"}}
+{"id":"T100","kind":"TRACK","source":"RADAR-1","identity":"HOSTILE","ttlSec":0,"geometry":{"position":{"range":11,"bearing":28}},"properties":{"course":210,"speed":28,"platform":"FAC"}}
+{"id":"T100","kind":"TRACK","source":"RADAR-1","identity":"HOSTILE","ttlSec":0,"geometry":{"position":{"range":10.5,"bearing":27}},"properties":{"course":210,"speed":28,"platform":"FAC"}}
+{"id":"T104","action":"DELETE"}

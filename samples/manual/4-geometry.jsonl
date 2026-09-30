@@ -1,0 +1,8 @@
+{"id":"WEZ-SAM","kind":"CIRCLE","source":"CMS","identity":"FRIEND","label":"SAM WEZ","ttlSec":0,"geometry":{"radius":10},"style":{"color":"#4fc3f7","dashed":true}}
+{"id":"THREAT-T100","kind":"CIRCLE","source":"CMS","identity":"HOSTILE","label":"T100 SSM","ttlSec":0,"geometry":{"center":{"range":12,"bearing":30},"radius":5},"style":{"fill":"#ff3b3b","fillOpacity":0.08}}
+{"id":"AOU-1","kind":"ELLIPSE","source":"FUSION","identity":"UNKNOWN","label":"AOU","ttlSec":0,"geometry":{"center":{"range":18,"bearing":280},"semiMajor":3,"semiMinor":1.2,"orientation":95}}
+{"id":"BLIND-ARC","kind":"SECTOR","source":"RADAR-1","identity":"FRIEND","label":"BLIND ARC","ttlSec":0,"geometry":{"startBearing":200,"endBearing":250,"innerRadius":0,"outerRadius":25},"style":{"color":"#f5a623","fill":"#f5a623","fillOpacity":0.08,"dashed":true}}
+{"id":"ESM-1","kind":"BEARING","source":"ESM","identity":"HOSTILE","label":"ESM 1","ttlSec":0,"geometry":{"bearing":31},"properties":{"emitter":"I-band radar","frequencyMHz":9410}}
+{"id":"ROUTE-1","kind":"LINE","source":"NAV","identity":"FRIEND","label":"ROUTE","ttlSec":0,"geometry":{"points":[{"lat":36.5,"lon":15.2},{"lat":36.61785,"lon":15.34661},{"lat":36.61401,"lon":15.58966}]},"style":{"color":"#8bc34a","dashed":true}}
+{"id":"BOX-A","kind":"POLYGON","source":"C2","identity":"NEUTRAL","label":"BOX A","ttlSec":0,"geometry":{"points":[{"range":14,"bearing":320},{"range":20,"bearing":335},{"range":17,"bearing":355},{"range":11,"bearing":340}]},"style":{"color":"#ff9800","fill":"#ff9800","fillOpacity":0.1}}
+{"id":"DATUM-1","kind":"POINT","source":"ASW","identity":"SUSPECT","label":"DATUM","ttlSec":0,"geometry":{"position":{"range":9,"bearing":150}}}

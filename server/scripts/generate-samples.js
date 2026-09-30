@@ -130,3 +130,85 @@ write(
     .map((m) => JSON.stringify(m))
     .join('\n'),
 );
+
+// ---------------------------------------------------------------- manual copy-paste set
+// One message per line, no timestamps (the server uses receive time) and ttlSec 0 so
+// nothing expires while testing by hand. See samples/manual/README.md.
+const manual = {
+  'radar.ownship': [
+    { id: 'OWNSHIP', action: 'DELETE' },
+    { id: 'OWNSHIP', kind: 'OWNSHIP', source: 'NAV', identity: 'FRIEND', label: 'OWN SHIP', geometry: { position: OWN }, properties: { heading: 45, course: 45, speed: 16 } },
+  ],
+  'radar.tracks': [
+    { id: 'T100', kind: 'TRACK', source: 'RADAR-1', identity: 'HOSTILE', ttlSec: 0, geometry: { position: { range: 12, bearing: 30 } }, properties: { course: 210, speed: 28, platform: 'FAC' } },
+    { id: 'T101', kind: 'TRACK', source: 'RADAR-1', identity: 'FRIEND', ttlSec: 0, geometry: { position: move(OWN, 120, 8) }, properties: { course: 45, speed: 16, platform: 'FFG' } },
+    { id: 'T102', kind: 'TRACK', source: 'RADAR-1', identity: 'UNKNOWN', ttlSec: 0, geometry: { position: { range: 18, bearing: 280 } }, properties: { course: 95, speed: 250, domain: 'AIR', altitude: 12000 } },
+    { id: 'T103', kind: 'TRACK', source: 'RADAR-1', identity: 'NEUTRAL', ttlSec: 0, geometry: { position: { range: 6, bearing: 200 } }, properties: { course: 330, speed: 11, platform: 'MERCHANT' } },
+    { id: 'T104', kind: 'TRACK', source: 'RADAR-1', identity: 'SUSPECT', ttlSec: 0, geometry: { position: { range: 15, bearing: 160 } }, properties: { course: 300, speed: 35, platform: 'FAST BOAT' } },
+  ],
+  'radar.tracks (updates)': [
+    { id: 'T100', kind: 'TRACK', source: 'RADAR-1', identity: 'HOSTILE', ttlSec: 0, geometry: { position: { range: 11.5, bearing: 29 } }, properties: { course: 210, speed: 28, platform: 'FAC' } },
+    { id: 'T100', kind: 'TRACK', source: 'RADAR-1', identity: 'HOSTILE', ttlSec: 0, geometry: { position: { range: 11, bearing: 28 } }, properties: { course: 210, speed: 28, platform: 'FAC' } },
+    { id: 'T100', kind: 'TRACK', source: 'RADAR-1', identity: 'HOSTILE', ttlSec: 0, geometry: { position: { range: 10.5, bearing: 27 } }, properties: { course: 210, speed: 28, platform: 'FAC' } },
+    { id: 'T104', action: 'DELETE' },
+  ],
+  'radar.geometry': [
+    { id: 'WEZ-SAM', kind: 'CIRCLE', source: 'CMS', identity: 'FRIEND', label: 'SAM WEZ', ttlSec: 0, geometry: { radius: 10 }, style: { color: '#4fc3f7', dashed: true } },
+    { id: 'THREAT-T100', kind: 'CIRCLE', source: 'CMS', identity: 'HOSTILE', label: 'T100 SSM', ttlSec: 0, geometry: { center: { range: 12, bearing: 30 }, radius: 5 }, style: { fill: '#ff3b3b', fillOpacity: 0.08 } },
+    { id: 'AOU-1', kind: 'ELLIPSE', source: 'FUSION', identity: 'UNKNOWN', label: 'AOU', ttlSec: 0, geometry: { center: { range: 18, bearing: 280 }, semiMajor: 3, semiMinor: 1.2, orientation: 95 } },
+    { id: 'BLIND-ARC', kind: 'SECTOR', source: 'RADAR-1', identity: 'FRIEND', label: 'BLIND ARC', ttlSec: 0, geometry: { startBearing: 200, endBearing: 250, innerRadius: 0, outerRadius: 25 }, style: { color: '#f5a623', fill: '#f5a623', fillOpacity: 0.08, dashed: true } },
+    { id: 'ESM-1', kind: 'BEARING', source: 'ESM', identity: 'HOSTILE', label: 'ESM 1', ttlSec: 0, geometry: { bearing: 31 }, properties: { emitter: 'I-band radar', frequencyMHz: 9410 } },
+    { id: 'ROUTE-1', kind: 'LINE', source: 'NAV', identity: 'FRIEND', label: 'ROUTE', ttlSec: 0, geometry: { points: [OWN, move(OWN, 45, 10), move(OWN, 70, 20)] }, style: { color: '#8bc34a', dashed: true } },
+    { id: 'BOX-A', kind: 'POLYGON', source: 'C2', identity: 'NEUTRAL', label: 'BOX A', ttlSec: 0, geometry: { points: [{ range: 14, bearing: 320 }, { range: 20, bearing: 335 }, { range: 17, bearing: 355 }, { range: 11, bearing: 340 }] }, style: { color: '#ff9800', fill: '#ff9800', fillOpacity: 0.1 } },
+    { id: 'DATUM-1', kind: 'POINT', source: 'ASW', identity: 'SUSPECT', label: 'DATUM', ttlSec: 0, geometry: { position: { range: 9, bearing: 150 } } },
+  ],
+  'c2.zones': [
+    {
+      type: 'FeatureCollection',
+      features: [
+        { type: 'Feature', id: 'GJ-ZONE', geometry: { type: 'Polygon', coordinates: [[move(OWN, 100, 12), move(OWN, 90, 20), move(OWN, 110, 22), move(OWN, 100, 12)].map(ll)] }, properties: { label: 'GEOJSON ZONE', identity: 'NEUTRAL', source: 'GIS', ttlSec: 0 } },
+        { type: 'Feature', id: 'GJ-ANCH', geometry: { type: 'Point', coordinates: ll(move(OWN, 250, 14)) }, properties: { label: 'ANCHORAGE', identity: 'NEUTRAL', source: 'GIS', ttlSec: 0 } },
+      ],
+    },
+  ],
+  'radar.legacy-plots': [{ trackNo: 777, rng: 7.5, brg: 250, crs: 90, spd: 14, ident: 'H' }],
+  'radar.geometry (invalid, for the Rejected tab)': [
+    { id: 'BAD-1', kind: 'CIRCLE', geometry: {} },
+    { id: 'BAD-2', kind: 'POINT', geometry: { position: { lat: 95, lon: 15 } } },
+  ],
+};
+
+const Tm = Date.now();
+const manualNmea = {
+  'radar.nmea': [
+    hdt(45.0),
+    rmc({ ...OWN, sog: 16.0, cog: 45.0, t: Tm }),
+    ttm({ number: 1, range: 5.2, bearing: 60, speed: 8, course: 190, cpa: 1.1, tcpa: 22, t: Tm }),
+    ttm({ number: 2, range: 3.1, bearing: 175, speed: 3, course: 300, cpa: 0.3, tcpa: 9.5, name: 'FISHING', t: Tm }),
+    ttm({ number: 3, range: 9.8, bearing: 290, speed: 12, course: 80, t: Tm }),
+    tll({ number: 4, ...move(OWN, 330, 7), name: 'BUOY', t: Tm }),
+  ],
+  'radar.nmea (target lost)': [ttm({ number: 3, range: 9.8, bearing: 290, speed: 12, course: 80, status: 'L', t: Tm })],
+  'ais.nmea': [
+    { mmsi: 247123456, name: 'MSC AURORA', brg: 20, rng: 16, cog: 250, sog: 14.5 },
+    { mmsi: 538004512, name: 'NORDIC PRIDE', brg: 95, rng: 12, cog: 330, sog: 11.2 },
+    { mmsi: 229876000, name: 'MARIA K', brg: 230, rng: 8, cog: 60, sog: 6.1, status: 7 },
+  ].flatMap((v) => [aisName({ mmsi: v.mmsi, name: v.name }), aisPosition({ ...v, ...move(OWN, v.brg, v.rng), heading: Math.round(v.cog) })]),
+};
+
+// section title -> file name in samples/manual (the topic is the part before " (")
+const MANUAL_FILES = {
+  'radar.ownship': '1-ownship.jsonl',
+  'radar.tracks': '2-tracks.jsonl',
+  'radar.tracks (updates)': '3-track-updates.jsonl',
+  'radar.geometry': '4-geometry.jsonl',
+  'c2.zones': '5-geojson-zones.jsonl',
+  'radar.legacy-plots': '6-legacy-plot.jsonl',
+  'radar.nmea': '7-nmea-radar.nmea',
+  'radar.nmea (target lost)': '8-nmea-target-lost.nmea',
+  'ais.nmea': '9-ais.nmea',
+  'radar.geometry (invalid, for the Rejected tab)': '10-invalid.jsonl',
+};
+fs.rmSync(path.join(root, 'manual'), { recursive: true, force: true });
+for (const [section, msgs] of Object.entries(manual)) write(`manual/${MANUAL_FILES[section]}`, msgs.map((m) => JSON.stringify(m)).join('\n'));
+for (const [section, lines] of Object.entries(manualNmea)) write(`manual/${MANUAL_FILES[section]}`, lines.join('\n'));

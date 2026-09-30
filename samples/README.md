@@ -14,6 +14,11 @@ ship at 36°30'N 015°12'E, heading 045°.
 The NMEA files have one sentence per line, and each line is sent as its own Kafka message.
 All checksums are valid.
 
+## Testing by hand
+
+[`manual/`](manual/README.md) has one-line messages for each topic that you can copy and paste into
+`kafka-console-producer`, with step-by-step instructions.
+
 ## Publish the samples
 
 ```bash

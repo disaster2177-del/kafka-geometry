@@ -1,0 +1,2 @@
+{"id":"OWNSHIP","action":"DELETE"}
+{"id":"OWNSHIP","kind":"OWNSHIP","source":"NAV","identity":"FRIEND","label":"OWN SHIP","geometry":{"position":{"lat":36.5,"lon":15.2}},"properties":{"heading":45,"course":45,"speed":16}}
