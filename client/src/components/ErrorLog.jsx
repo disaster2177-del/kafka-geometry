@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { getErrors } from '../lib/api.js';
 
 /** Messages rejected by the server (invalid JSON, schema errors, ...). */
 export default function ErrorLog() {
@@ -9,11 +10,9 @@ export default function ErrorLog() {
     let active = true;
     const load = async () => {
       try {
-        const res = await fetch('/api/errors');
-        if (!res.ok) throw new Error(res.statusText);
-        const body = await res.json();
+        const body = await getErrors();
         if (active) {
-          setErrors(body);
+          setErrors([...body]);
           setFailed(null);
         }
       } catch (err) {

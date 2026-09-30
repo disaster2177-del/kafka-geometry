@@ -6,7 +6,7 @@ const logger = {
   warn: (...args) => console.warn(ts(), 'WARN ', ...args),
   error: (...args) => console.error(ts(), 'ERROR', ...args),
   debug: (...args) => {
-    if (process.env.DEBUG) console.log(ts(), 'DEBUG', ...args);
+    if (typeof process !== 'undefined' && process.env?.DEBUG) console.log(ts(), 'DEBUG', ...args);
   },
 };
 

@@ -4,6 +4,7 @@ const STATE_CLASS = {
   disconnected: 'bad',
   error: 'bad',
   disabled: 'pending',
+  demo: 'ok',
 };
 
 export default function StatusBar({ connection, status, objectCount, now }) {
@@ -23,12 +24,16 @@ export default function StatusBar({ connection, status, objectCount, now }) {
       </div>
 
       <div className="status-items">
-        <span className={`pill ${STATE_CLASS[connection] ?? 'bad'}`}>SERVER {connection.toUpperCase()}</span>
+        {kafka?.state === 'demo' ? (
+          <span className="demo-note">Demo: the simulated Kafka feed runs in your browser</span>
+        ) : (
+          <span className={`pill ${STATE_CLASS[connection] ?? 'bad'}`}>SERVER {connection.toUpperCase()}</span>
+        )}
         <span
           className={`pill ${STATE_CLASS[kafka?.state] ?? 'pending'}`}
           title={kafka?.error ? `Error: ${kafka.error}` : kafka?.brokers?.join(', ')}
         >
-          KAFKA {(kafka?.state ?? 'unknown').toUpperCase()}
+          {kafka?.state === 'demo' ? 'KAFKA SIMULATED' : `KAFKA ${(kafka?.state ?? 'unknown').toUpperCase()}`}
         </span>
         <span className="stat">
           OBJECTS <b>{objectCount}</b>

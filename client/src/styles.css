@@ -116,6 +116,7 @@ main {
 }
 
 aside {
+  min-width: 0;
   background: var(--panel);
   min-height: 0;
   display: flex;
@@ -139,7 +140,7 @@ aside.right {
 
 @media (max-width: 1100px) {
   main {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: minmax(420px, 70vh) auto auto;
   }
   .center {
@@ -539,4 +540,22 @@ tbody tr.selected {
 .scope-overlay.bottom-left {
   bottom: 10px;
   left: 10px;
+}
+
+.demo-note {
+  color: var(--warn);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+/* Stacked layout on tablets / phones: let the page grow and scroll. */
+@media (max-width: 1100px) {
+  .app {
+    height: auto;
+    min-height: 100%;
+  }
+  .statusbar,
+  .panel {
+    padding-inline: 16px;
+  }
 }

@@ -1,7 +1,5 @@
 import { useEffect, useReducer, useState } from 'react';
-import { io } from 'socket.io-client';
-
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || undefined; // same origin by default
+import { deleteObject, subscribe } from '../lib/api.js';
 
 function reducer(state, action) {
   switch (action.type) {
@@ -28,7 +26,7 @@ function reducer(state, action) {
 }
 
 /**
- * Subscribes to the server's Socket.IO feed and keeps the live tactical picture.
+ * Subscribes to the live feed (Socket.IO, or the demo engine) and keeps the tactical picture.
  */
 export default function useTacticalPicture() {
   const [state, dispatch] = useReducer(reducer, { objects: {}, version: 0 });
@@ -36,19 +34,16 @@ export default function useTacticalPicture() {
   const [status, setStatus] = useState(null);
 
   useEffect(() => {
-    const socket = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
-    socket.on('connect', () => setConnection('connected'));
-    socket.on('disconnect', () => setConnection('disconnected'));
-    socket.on('connect_error', () => setConnection('error'));
-    socket.on('snapshot', (list) => dispatch({ type: 'snapshot', list }));
-    socket.on('geometry:batch', ({ upserts, deletes }) => dispatch({ type: 'batch', upserts, deletes }));
-    socket.on('status', setStatus);
-    return () => socket.disconnect();
+    return subscribe({
+      onSnapshot: (list) => dispatch({ type: 'snapshot', list }),
+      onBatch: ({ upserts, deletes }) => dispatch({ type: 'batch', upserts, deletes }),
+      onStatus: setStatus,
+      onConnection: setConnection,
+    });
   }, []);
 
   const removeObject = async (id) => {
-    const res = await fetch(`/api/geometries/${encodeURIComponent(id)}`, { method: 'DELETE' });
-    if (res.ok || res.status === 404) dispatch({ type: 'remove', id });
+    if (await deleteObject(id)) dispatch({ type: 'remove', id });
   };
 
   return { objects: state.objects, version: state.version, connection, status, removeObject };

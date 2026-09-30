@@ -17,7 +17,7 @@
  * bearings may be relative to the ship's head.
  */
 
-const OWNSHIP_ID = process.env.NMEA_OWNSHIP_ID || 'OWNSHIP';
+const OWNSHIP_ID = (typeof process !== 'undefined' && process.env?.NMEA_OWNSHIP_ID) || 'OWNSHIP';
 
 // `time` = time of the last position fix. Sentences without their own time
 // (HDT, VTG) reuse it so they never look newer than the next fix.

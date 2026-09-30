@@ -78,6 +78,17 @@ to `POST /api/ingest`.
 Run the tests with `npm test`. That runs the server unit tests (normaliser, store, adapters)
 and the client projection-math tests.
 
+### Option C: demo without any backend
+
+```bash
+npm --prefix client run build:demo     # -> client/dist-demo/index.html
+```
+
+This builds a single self-contained HTML file that you can open directly in a browser. It runs
+the real adapters, normaliser and live-picture store in the browser, on the same scenario that
+`npm run simulate` publishes to Kafka. There's no Kafka, MongoDB or API server behind it, so it's
+useful for showing the UI. For live development of the demo, run `npm --prefix client run dev:demo`.
+
 ## Message format (canonical)
 
 Send one JSON object per Kafka message. An array, `{ "items": [...] }` or a GeoJSON

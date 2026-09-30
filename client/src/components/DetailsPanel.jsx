@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { formatBearing, formatLat, formatLon, formatRange, rangeBearingOf, toLocal } from '../lib/geo.js';
 import { colorOf } from '../lib/symbology.js';
+import { getHistory } from '../lib/api.js';
 import { anchorOf } from './ObjectList.jsx';
 
 function formatPosition(p) {
@@ -52,9 +53,7 @@ export default function DetailsPanel({ obj, reference, now, onCenter, onRemove }
   const loadHistory = async () => {
     setHistory({ loading: true });
     try {
-      const res = await fetch(`/api/geometries/${encodeURIComponent(obj.id)}/history?limit=50`);
-      const body = await res.json();
-      setHistory(res.ok ? { items: body } : { error: body.error ?? res.statusText });
+      setHistory({ items: await getHistory(obj.id, 50) });
     } catch (err) {
       setHistory({ error: err.message });
     }

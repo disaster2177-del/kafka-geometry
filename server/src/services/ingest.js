@@ -26,7 +26,7 @@ export class IngestPipeline {
       this.rate = this.windowCount;
       this.windowCount = 0;
     }, 1000);
-    this.rateTimer.unref();
+    this.rateTimer.unref?.(); // Node only; this module also runs in the browser demo
   }
 
   /**
