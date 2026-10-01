@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import RadarScope from './components/RadarScope.jsx';
 import ScopeControls, { RANGE_STEPS } from './components/ScopeControls.jsx';
 import ObjectList from './components/ObjectList.jsx';
@@ -8,6 +8,9 @@ import ErrorLog from './components/ErrorLog.jsx';
 import useTacticalPicture from './hooks/useTacticalPicture.js';
 import useNow from './hooks/useNow.js';
 
+// Loaded on first use so the classic scope doesn't pay for Turf.js.
+const TurfRadarScope = lazy(() => import('./components/TurfRadarScope.jsx'));
+
 const DEFAULT_SETTINGS = {
   rangeNm: 24,
   orientation: 'NORTH_UP',
@@ -16,6 +19,7 @@ const DEFAULT_SETTINGS = {
   showTrails: true,
   showLeaders: true,
   leaderMinutes: 6,
+  engine: 'classic', // 'classic' (RadarScope) | 'turf' (TurfRadarScope)
 };
 
 function loadSettings() {
@@ -122,6 +126,8 @@ export default function App() {
       if (e.key === 'c' || e.key === 'C') setOffset(ORIGIN);
       else if (e.key === 'h' || e.key === 'H')
         setSettings((s) => ({ ...s, orientation: s.orientation === 'HEAD_UP' ? 'NORTH_UP' : 'HEAD_UP' }));
+      else if (e.key === 't' || e.key === 'T')
+        setSettings((s) => ({ ...s, engine: s.engine === 'turf' ? 'classic' : 'turf' }));
       else if (e.key === '+' || e.key === '=') stepRange(-1);
       else if (e.key === '-') stepRange(1);
       else if (e.key === 'Escape') setSelectedId(null);
@@ -131,6 +137,21 @@ export default function App() {
   }, [stepRange]);
 
   const showOwnship = !filters.hiddenKinds.has('OWNSHIP');
+
+  // Both scope engines take the same props.
+  const scopeProps = {
+    objects: visible,
+    ownship,
+    showOwnship,
+    reference,
+    settings,
+    offset,
+    onOffsetChange: setOffset,
+    onRangeStep: stepRange,
+    selectedId,
+    onSelect: select,
+    now,
+  };
 
   return (
     <div className="app">
@@ -148,19 +169,13 @@ export default function App() {
         </aside>
 
         <section className="center">
-          <RadarScope
-            objects={visible}
-            ownship={ownship}
-            showOwnship={showOwnship}
-            reference={reference}
-            settings={settings}
-            offset={offset}
-            onOffsetChange={setOffset}
-            onRangeStep={stepRange}
-            selectedId={selectedId}
-            onSelect={select}
-            now={now}
-          />
+          {settings.engine === 'turf' ? (
+            <Suspense fallback={<div className="scope-loading">Loading Turf.js engine…</div>}>
+              <TurfRadarScope {...scopeProps} />
+            </Suspense>
+          ) : (
+            <RadarScope {...scopeProps} />
+          )}
         </section>
 
         <aside className="right">

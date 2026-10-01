@@ -559,3 +559,64 @@ tbody tr.selected {
     padding-inline: 16px;
   }
 }
+
+/* ---------------------------------------------------------- geometry engine (Turf.js) */
+.engine-hint {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.engine-tag {
+  color: var(--accent);
+}
+
+.scope-overlay.bottom-right {
+  bottom: 10px;
+  right: 10px;
+  max-width: 260px;
+}
+
+.alerts-title {
+  color: var(--muted);
+}
+
+.alerts-title.active {
+  color: var(--bad);
+  font-weight: 700;
+}
+
+.alert-row {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.zone-alert-ring {
+  fill: none;
+  stroke: var(--bad);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 3;
+  animation: zone-alert 1.2s ease-in-out infinite;
+}
+
+@keyframes zone-alert {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zone-alert-ring {
+    animation: none;
+  }
+}
+
+.scope-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-family: var(--mono);
+}

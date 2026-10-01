@@ -89,6 +89,22 @@ the real adapters, normaliser and live-picture store in the browser, on the same
 `npm run simulate` publishes to Kafka. There's no Kafka, MongoDB or API server behind it, so it's
 useful for showing the UI. For live development of the demo, run `npm --prefix client run dev:demo`.
 
+## Geometry engines: Classic and Turf.js
+
+The scope has two interchangeable rendering engines. Switch between them with the **Classic** and
+**Turf.js** buttons at the top of the left panel, or press **T**. The choice is remembered in the
+browser.
+
+| | Classic (`RadarScope.jsx`) | Turf.js (`TurfRadarScope.jsx`) |
+|---|---|---|
+| Projection | Flat local plane around own ship | Azimuthal equidistant around own ship: the true radar picture |
+| Accuracy | About 10 m at 24 NM, 100 m at 48 NM, 2.5 km at 192 NM | Range and bearing from own ship are exact at any distance |
+| Shapes | Sampled in the flat plane | Built by Turf as geodesic GeoJSON: `circle`, `ellipse`, `lineArc`, `destination` |
+| Zone alerts | None | Hostile, suspect, unknown and pending tracks inside a zone, weapon range or blind arc (`booleanPointInPolygon`) |
+| Loading | Part of the main bundle | Loaded when first selected (about 8 KB gzipped) |
+
+The Turf.js geometry code is in `client/src/lib/turfGeo.js`, with tests in `turfGeo.test.js`.
+
 ## Message format (canonical)
 
 Send one JSON object per Kafka message. An array, `{ "items": [...] }` or a GeoJSON

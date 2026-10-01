@@ -15,6 +15,33 @@ export default function ScopeControls({ settings, setSettings, filters, setFilte
   return (
     <div className="panel controls">
       <section>
+        <h3>Geometry engine</h3>
+        <div className="btn-row" role="group" aria-label="Geometry engine">
+          <button
+            className={settings.engine !== 'turf' ? 'active' : ''}
+            aria-pressed={settings.engine !== 'turf'}
+            onClick={() => set({ engine: 'classic' })}
+            title="Flat local projection (original scope)"
+          >
+            Classic
+          </button>
+          <button
+            className={settings.engine === 'turf' ? 'active' : ''}
+            aria-pressed={settings.engine === 'turf'}
+            onClick={() => set({ engine: 'turf' })}
+            title="Turf.js: geodesic shapes, azimuthal equidistant projection, zone alerts"
+          >
+            Turf.js
+          </button>
+        </div>
+        <p className="engine-hint">
+          {settings.engine === 'turf'
+            ? 'Geodesic shapes and exact range/bearing at any distance, plus zone alerts.'
+            : 'Flat local projection. Accurate to about 100 m at 48 NM.'}
+        </p>
+      </section>
+
+      <section>
         <h3>Range (NM)</h3>
         <div className="btn-row wrap">
           {RANGE_STEPS.map((r) => (
@@ -109,7 +136,7 @@ export default function ScopeControls({ settings, setSettings, filters, setFilte
         </section>
       )}
 
-      <p className="hint">Mouse wheel: range · drag: pan · click: select · C: centre · H: head/north up</p>
+      <p className="hint">Mouse wheel: range · drag: pan · click: select · C: centre · H: head/north up · T: switch engine</p>
     </div>
   );
 }

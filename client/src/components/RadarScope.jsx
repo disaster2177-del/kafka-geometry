@@ -222,12 +222,12 @@ export default function RadarScope({
 
 // ------------------------------------------------------------------ helpers
 
-function ringStep(rangeNm) {
+export function ringStep(rangeNm) {
   const candidates = [0.25, 0.5, 1, 2, 3, 5, 10, 20, 25, 50, 100];
   return candidates.find((c) => rangeNm / c <= 6) ?? rangeNm / 4;
 }
 
-const RangeRings = memo(function RangeRings({ view }) {
+export const RangeRings = memo(function RangeRings({ view }) {
   const step = ringStep(view.rangeNm);
   const origin = view.project({ x: 0, y: 0 });
   const rings = [];
@@ -251,7 +251,7 @@ const RangeRings = memo(function RangeRings({ view }) {
   );
 });
 
-function BearingScale({ view }) {
+export function BearingScale({ view }) {
   const ticks = [];
   for (let b = 0; b < 360; b += 5) {
     const a = (view.screenAngle(b) * Math.PI) / 180;
@@ -288,7 +288,7 @@ function BearingScale({ view }) {
 }
 
 const SWEEP_WEDGES = 14;
-function Sweep({ view }) {
+export function Sweep({ view }) {
   const origin = view.project({ x: 0, y: 0 });
   const r = view.radiusPx * 3;
   const wedges = [];
@@ -319,7 +319,7 @@ function Sweep({ view }) {
   );
 }
 
-function OwnShip({ view, heading, speed, settings, selected, onSelect }) {
+export function OwnShip({ view, heading, speed, settings, selected, onSelect }) {
   const p = view.project({ x: 0, y: 0 });
   const headEnd = view.project(offsetLocal({ x: 0, y: 0 }, heading, view.rangeNm * 3));
   const leaderEnd = view.project(offsetLocal({ x: 0, y: 0 }, heading, (speed * settings.leaderMinutes) / 60));
@@ -336,7 +336,7 @@ function OwnShip({ view, heading, speed, settings, selected, onSelect }) {
   );
 }
 
-function SelectionBox({ x, y, s = 14 }) {
+export function SelectionBox({ x, y, s = 14 }) {
   const c = s * 0.45;
   return (
     <path
@@ -351,7 +351,7 @@ function SelectionBox({ x, y, s = 14 }) {
   );
 }
 
-function Label({ x, y, children, color }) {
+export function Label({ x, y, children, color }) {
   return (
     <text x={x} y={y} className="obj-label" fill={color}>
       {children}
